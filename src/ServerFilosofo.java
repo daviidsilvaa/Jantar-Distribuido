@@ -42,7 +42,6 @@ public class ServerFilosofo implements Runnable{
 			
 			if(msg.getValue() == "pedindoHashi") {
 				if(this.myHashi == false) {
-					this.myHashi = true;
 					msg.setValue("disponivel");
 				} else {
 					msg.setValue("indisponivel");
@@ -56,6 +55,10 @@ public class ServerFilosofo implements Runnable{
 			
 			if(msg.getValue() == "devolvendoHashi") {
 				this.myHashi = false;
+			}
+			
+			if(msg.getValue() == "pegandoHashi") {
+				this.myHashi = true;
 			}
 		}
 	}
