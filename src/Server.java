@@ -39,13 +39,13 @@ public class Server {
 		for(int i = 0; i < this.n; i++) {
 			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.clients.get(i).getOutputStream()));
 
-			Message msg = new Message("this is my message and thats all!!!");
+			Message msg = new Message("comecar!");
 
 			out.writeObject(msg);
 			out.flush();
 
 			this.clients.get(i).close();
 		}
-
+		server.close();
 	}
 }

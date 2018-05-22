@@ -19,9 +19,9 @@ public class ClienteFilosofo {
 				Integer.parseInt(properties.get("serverPort"))
 				).waitInit();
 
-//		new ClienteFilosofo(" ", properties.get("serverNeigh"),
-//				Integer.parseInt(properties.get("serverPort"))
-//				).execute();
+		new ClienteFilosofo(" ", properties.get("serverNeigh"),
+				Integer.parseInt(properties.get("serverPort"))
+				).execute();
 	}
 
 	public ClienteFilosofo(String client, String server, int port) throws UnknownHostException, IOException {
@@ -49,7 +49,9 @@ public class ClienteFilosofo {
 	public void execute() throws IOException, ClassNotFoundException{
 		Map<String, String> properties = new Properties("../config.properties").get();
 
-		System.out.println("Conectando ao filosofo " + properties.get("serverNeigh"));
+		//new ServerFilosofo(Integer.parseInt(properties.get("serverPort")));
+
+		System.out.println("Conectado ao filosofo " + properties.get("serverNeigh"));
 
 //		while(!true);
 
