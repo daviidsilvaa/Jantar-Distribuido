@@ -1,9 +1,15 @@
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Map;
+<<<<<<< HEAD
+import java.util.Random;
+=======
+>>>>>>> 5ee14482ec78c40a6a7a605bc80250bda9097774
 import java.util.concurrent.TimeUnit;
 import properties.Properties;
 
@@ -57,12 +63,60 @@ public class ClienteFilosofo {
 
 		System.out.println("Conectado ao filosofo " + properties.get("serverNeigh"));
 
-//		while(!true);
+		//while(true) {
+			sleep();
+			think();
+			eat();
+			//			System.out.println("recebido");
+		//}
+	}
 
-//		new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+	public void sleep() {
+		Random rand = new Random();
+		try{
+			TimeUnit.MILLISECONDS.sleep(rand.nextInt(50));
+			System.out.println("dormindo");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 
-//		System.out.println("recebido");
+	public void think() {
+		Random rand = new Random();
+		try{
+			TimeUnit.MILLISECONDS.sleep(rand.nextInt(50));
+			System.out.println("pensando");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 
-		this.socket.close();
+	public void eat() throws IOException {
+		Map<String, String> properties = new Properties("../config.properties").get();
+		
+		boolean hashi1 = this.requestHashi("localhost");
+		boolean hashi2 = this.requestHashi(properties.get("serverNeigh"));
+		
+		System.out.println(hashi1 + " : " + hashi2);
+	}
+	
+	public boolean requestHashi(String ip) throws IOException {
+		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+		Message msg = new Message("pedindoHashi");
+		out.writeObject(msg);
+		out.flush();
+		
+		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		try{
+			msg = (Message) in.readObject();
+		}catch(Exception e){
+			e.printStackTrace();;
+		}
+		
+		if(msg.getValue() == "disponivel") {
+			return true;
+		}
+		
+		return false;
 	}
 }

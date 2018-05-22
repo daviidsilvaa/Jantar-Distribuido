@@ -1,6 +1,8 @@
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
@@ -20,6 +22,10 @@ public class ServerFilosofo implements Runnable{
 		System.out.println("Porta " + this.port + " aberta!");
 		try{
 			this.socket = this.server.accept();
+<<<<<<< HEAD
+			
+=======
+>>>>>>> 5ee14482ec78c40a6a7a605bc80250bda9097774
 		}catch(Exception e){}
 	}
 
@@ -32,8 +38,34 @@ public class ServerFilosofo implements Runnable{
 	}
 
 	public void execute() throws IOException {
+<<<<<<< HEAD
+		while(!this.isStopped) {
+			ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+			Message msg = new Message();
+			
+			try{
+				msg = (Message) in.readObject();
+			}catch(Exception e){
+				e.printStackTrace();;
+			}
+			
+			if(msg.getValue() == "pedindoHashi") {
+				if(this.myHashi == false) {
+					msg.setValue("disponivel");
+				} else {
+					msg.setValue("indisponivel");
+				}
+			}
+			
+			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+			
+			out.writeObject(msg);
+			out.flush();
+		}
+=======
 		//while(!this.isStopped) {
 		//	new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		//}
+>>>>>>> 5ee14482ec78c40a6a7a605bc80250bda9097774
 	}
 }
