@@ -22,7 +22,10 @@ public class ServerFilosofo implements Runnable{
 		System.out.println("Porta " + this.port + " aberta!");
 		try{
 			this.socket = this.server.accept();
+<<<<<<< HEAD
 			
+=======
+>>>>>>> 5ee14482ec78c40a6a7a605bc80250bda9097774
 		}catch(Exception e){}
 	}
 
@@ -35,6 +38,7 @@ public class ServerFilosofo implements Runnable{
 	}
 
 	public void execute() throws IOException {
+<<<<<<< HEAD
 		while(!this.isStopped) {
 			ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 			Message msg = new Message();
@@ -58,5 +62,10 @@ public class ServerFilosofo implements Runnable{
 			out.writeObject(msg);
 			out.flush();
 		}
+=======
+		//while(!this.isStopped) {
+		//	new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		//}
+>>>>>>> 5ee14482ec78c40a6a7a605bc80250bda9097774
 	}
 }
