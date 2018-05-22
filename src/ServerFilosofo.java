@@ -5,9 +5,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Map;
-
-import properties.Properties;
 
 public class ServerFilosofo implements Runnable{
 	private int port;
@@ -16,16 +13,12 @@ public class ServerFilosofo implements Runnable{
 	private boolean isStopped;
 
 	private boolean myHashi;
-	private boolean neighHashi;
 
 	public void run(){
 		System.out.println("Porta " + this.port + " aberta!");
 		try{
 			this.socket = this.server.accept();
-<<<<<<< HEAD
-			
-=======
->>>>>>> 5ee14482ec78c40a6a7a605bc80250bda9097774
+			this.execute();
 		}catch(Exception e){}
 	}
 
@@ -33,12 +26,10 @@ public class ServerFilosofo implements Runnable{
 		this.port = port;
 		this.server = new ServerSocket(this.port);
 		this.myHashi = false;
-		this.neighHashi = false;
 		this.isStopped = false;
 	}
 
 	public void execute() throws IOException {
-<<<<<<< HEAD
 		while(!this.isStopped) {
 			ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 			Message msg = new Message();
@@ -46,26 +37,26 @@ public class ServerFilosofo implements Runnable{
 			try{
 				msg = (Message) in.readObject();
 			}catch(Exception e){
-				e.printStackTrace();;
+				e.printStackTrace();
 			}
 			
 			if(msg.getValue() == "pedindoHashi") {
 				if(this.myHashi == false) {
+					this.myHashi = true;
 					msg.setValue("disponivel");
 				} else {
 					msg.setValue("indisponivel");
 				}
+				
+				ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+				
+				out.writeObject(msg);
+				out.flush();
 			}
 			
-			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
-			
-			out.writeObject(msg);
-			out.flush();
+			if(msg.getValue() == "devolvendoHashi") {
+				this.myHashi = false;
+			}
 		}
-=======
-		//while(!this.isStopped) {
-		//	new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-		//}
->>>>>>> 5ee14482ec78c40a6a7a605bc80250bda9097774
 	}
 }
