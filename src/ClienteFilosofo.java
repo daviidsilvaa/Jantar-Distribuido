@@ -11,7 +11,8 @@ import java.util.concurrent.TimeUnit;
 import properties.Properties;
 
 public class ClienteFilosofo {
-	private Socket socket;
+	private Socket mySocket;
+	private Socket neighSocket;
 	private String server;
 	private int port;
 
@@ -38,13 +39,14 @@ public class ClienteFilosofo {
 	public ClienteFilosofo(String server, int port) throws UnknownHostException, IOException {
 		this.port = port;
 		this.server = server;
-		this.socket = new Socket(this.server, this.port);
+		this.neighSocket = new Socket(this.server, this.port);
+		this.mySocket = new Socket("localhost", this.port);
 	}
 
 	public void waitInit() throws IOException, ClassNotFoundException{
 		System.out.println("esperando");
 
-		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(neighSocket.getInputStream()));
 		Message msg = new Message();
 		try{
 			msg = (Message) in.readObject();
@@ -54,7 +56,7 @@ public class ClienteFilosofo {
 		System.out.println("recebido: " + msg.getValue());
 
 		in.close();
-		this.socket.close();
+		this.neighSocket.close();
 	}
 
 	public void execute() throws IOException, ClassNotFoundException{
@@ -85,52 +87,61 @@ public class ClienteFilosofo {
 		boolean hashi2 = false;
 
 		while(trying) {
+			System.out.println("tentando comer");
 			Random rand = new Random();
 			if(rand.nextBoolean() == true) {
+				
 				hashi1 = this.requestHashi("localhost");
 
 				if(hashi1 == false) {
+					System.out.println("\tpegou hashi 1");
 					takeHashi("localhost");
 					hashi1 = true;
 
 					hashi2 = this.requestHashi(properties.get("serverNeigh"));
 
 					if(hashi2 == false) {
+						System.out.println("\tpegou hashi 2");
 						takeHashi(properties.get("serverNeigh"));
 						hashi2 = true;
+						
+						trying = false;
+						System.out.println("comeu");
+						sleep1(100);
+						returnHashi(properties.get("serverNeigh"));
+						returnHashi("localhost");
 					} else {
+						System.out.println("\tnao pegou hashi 2");
 						returnHashi("localhost");
 					}
-
-					trying = false;
-					// come
-					sleep1(100);
-					returnHashi(properties.get("serverNeigh"));
-					returnHashi("localhost");
 				}
 			} else {
 				hashi2 = this.requestHashi(properties.get("serverNeigh"));
 
 				if(hashi2 == false) {
+					System.out.println("\tpegou hashi 2");
 					takeHashi(properties.get("serverNeigh"));
 					hashi2 = true;
 					
-					hashi1 = this.requestHashi(properties.get("serverNeigh"));
+					hashi1 = this.requestHashi("localhost");
 
 					if(hashi1 == false) {
+						System.out.println("\tpegou hashi 1");
 						takeHashi("localhost");
 						hashi1 = true;
+						
+						trying = false;
+						System.out.println("comeu");
+						sleep1(100);
+						returnHashi(properties.get("serverNeigh"));
+						returnHashi("localhost");						
 					} else {
+						System.out.println("\tnao pegou hashi 1");
 						returnHashi(properties.get("serverNeigh"));
 					}
-
-					trying = false;
-					// come
-					sleep1(100);
-					returnHashi(properties.get("serverNeigh"));
-					returnHashi("localhost");
 				}
 			}
+			trying = rand.nextBoolean();
 		}
 
 		//		while(TRUE)
@@ -153,34 +164,56 @@ public class ClienteFilosofo {
 	}
 
 	public void takeHashi(String ip) throws IOException {
-		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+		ObjectOutputStream out;
+		
+		if(ip.equals("localhost"))
+			out = new ObjectOutputStream(new BufferedOutputStream(this.mySocket.getOutputStream()));
+		else
+			out = new ObjectOutputStream(new BufferedOutputStream(this.neighSocket.getOutputStream()));
 		Message msg = new Message("pegandoHashi");
 		out.writeObject(msg);
 		out.flush();
 	}
 
 	public boolean requestHashi(String ip) throws IOException {
-		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+		ObjectOutputStream out;
+		ObjectInputStream in;
+		
+		if(ip.equals("localhost"))
+			out = new ObjectOutputStream(new BufferedOutputStream(this.mySocket.getOutputStream()));
+		else
+			out = new ObjectOutputStream(new BufferedOutputStream(this.neighSocket.getOutputStream()));
+		
 		Message msg = new Message("pedindoHashi");
 		out.writeObject(msg);
 		out.flush();
 
-		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		if(ip.equals("localhost"))
+			in = new ObjectInputStream(new BufferedInputStream(this.mySocket.getInputStream()));
+		else
+			in = new ObjectInputStream(new BufferedInputStream(this.neighSocket.getInputStream()));
+		
 		try{
 			msg = (Message) in.readObject();
 		}catch(Exception e){
 			e.printStackTrace();;
 		}
 
-		if(msg.getValue() == "disponivel") {
-			return true;
+		if(msg.getValue().equals("disponivel")) {
+			return false;
 		}
-
-		return false;
+		
+		return true;
 	}
 
 	public void returnHashi(String ip) throws IOException {
-		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+		ObjectOutputStream out;
+		
+		if(ip.equals("localhost"))
+			out = new ObjectOutputStream(new BufferedOutputStream(this.mySocket.getOutputStream()));
+		else
+			out = new ObjectOutputStream(new BufferedOutputStream(this.neighSocket.getOutputStream()));
+		
 		Message msg = new Message("devolvendoHashi");
 		out.writeObject(msg);
 		out.flush();
