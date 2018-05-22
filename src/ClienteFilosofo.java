@@ -4,7 +4,7 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Map;
-
+import java.util.concurrent.TimeUnit;
 import properties.Properties;
 
 public class ClienteFilosofo {
@@ -19,8 +19,14 @@ public class ClienteFilosofo {
 				Integer.parseInt(properties.get("serverPort"))
 				).waitInit();
 
+		new Thread(new ServerFilosofo(Integer.parseInt(properties.get("philoPort")))).start();
+
+		try{
+			TimeUnit.SECONDS.sleep(1);
+		}catch(Exception e){}
+
 		new ClienteFilosofo(" ", properties.get("serverNeigh"),
-				Integer.parseInt(properties.get("serverPort"))
+				Integer.parseInt(properties.get("philoPort"))
 				).execute();
 	}
 
@@ -48,8 +54,6 @@ public class ClienteFilosofo {
 
 	public void execute() throws IOException, ClassNotFoundException{
 		Map<String, String> properties = new Properties("../config.properties").get();
-
-		//new ServerFilosofo(Integer.parseInt(properties.get("serverPort")));
 
 		System.out.println("Conectado ao filosofo " + properties.get("serverNeigh"));
 

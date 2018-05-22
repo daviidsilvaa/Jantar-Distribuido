@@ -17,13 +17,10 @@ public class ServerFilosofo implements Runnable{
 	private boolean neighHashi;
 
 	public void run(){
-		Map<String, String> properties = null;
-		try {
-			properties = new Properties("../config.properties").get();
-		} catch (IOException e){	e.printStackTrace();}
-		try {
-			new ServerFilosofo(Integer.parseInt(properties.get("serverPort"))).execute();
-		} catch (NumberFormatException | IOException e) {	e.printStackTrace();}
+		System.out.println("Porta " + this.port + " aberta!");
+		try{
+			this.socket = this.server.accept();
+		}catch(Exception e){}
 	}
 
 	public ServerFilosofo(int port) throws IOException {
@@ -35,10 +32,6 @@ public class ServerFilosofo implements Runnable{
 	}
 
 	public void execute() throws IOException {
-		System.out.println("Porta " + this.port + " aberta!");
-
-		this.socket = this.server.accept();
-
 		//while(!this.isStopped) {
 		//	new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		//}
