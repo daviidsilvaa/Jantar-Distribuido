@@ -7,7 +7,7 @@ import java.util.Map;
 
 import properties.Properties;
 
-public class ServerFilosofo {
+public class ServerFilosofo implements Runnable{
 	private int port;
 	private ServerSocket server;
 	private Socket socket;
@@ -16,10 +16,14 @@ public class ServerFilosofo {
 	private boolean myHashi;
 	private boolean neighHashi;
 
-	public static void main(String[] args) throws IOException {
-		Map<String, String> properties = new Properties("../config.properties").get();
-
-		new ServerFilosofo(Integer.parseInt(properties.get("serverPort"))).execute();
+	public void run(){
+		Map<String, String> properties = null;
+		try {
+			properties = new Properties("../config.properties").get();
+		} catch (IOException e){	e.printStackTrace();}
+		try {
+			new ServerFilosofo(Integer.parseInt(properties.get("serverPort"))).execute();
+		} catch (NumberFormatException | IOException e) {	e.printStackTrace();}
 	}
 
 	public ServerFilosofo(int port) throws IOException {
