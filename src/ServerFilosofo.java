@@ -40,7 +40,7 @@ public class ServerFilosofo implements Runnable{
 				e.printStackTrace();
 			}
 			
-			if(msg.getValue() == "pedindoHashi") {
+			if(msg.getValue().equals("pedindoHashi")) {
 				if(this.myHashi == false) {
 					msg.setValue("disponivel");
 				} else {
@@ -53,13 +53,15 @@ public class ServerFilosofo implements Runnable{
 				out.flush();
 			}
 			
-			if(msg.getValue() == "devolvendoHashi") {
+			if(msg.getValue().equals("devolvendoHashi")) {
 				this.myHashi = false;
 			}
 			
-			if(msg.getValue() == "pegandoHashi") {
+			if(msg.getValue().equals("pegandoHashi")) {
 				this.myHashi = true;
 			}
+			
+			System.out.println("\tserver: " + this.myHashi);
 		}
 	}
 }
