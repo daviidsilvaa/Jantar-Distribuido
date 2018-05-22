@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -14,7 +15,6 @@ public class ClienteFilosofo {
 	private Socket mySocket;
 	private Socket neighSocket;
 	private String server;
-	private int port;
 
 	public static void main(String[] args) throws IOException, NumberFormatException, ClassNotFoundException {
 		Map<String, String> properties = new Properties("../config.properties").get();
@@ -25,24 +25,20 @@ public class ClienteFilosofo {
 		c1.waitInit();
 
 		new Thread(new ServerFilosofo(Integer.parseInt(properties.get("philoPort")))).start();
-
+		
 		try{
 			TimeUnit.SECONDS.sleep(1);
 		}catch(Exception e){}
 
 		ClienteFilosofo c2 = new ClienteFilosofo(properties.get("serverNeigh"),
-				Integer.parseInt(properties.get("philoPort"))
-				);
+				Integer.parseInt(properties.get("philoPort")));
 		c2.execute();
 	}
 
 	public ClienteFilosofo(String server, int port) throws UnknownHostException, IOException {
-		this.port = port;
 		this.server = server;
-		this.neighSocket = new Socket(this.server, this.port);
-		this.mySocket = new Socket("localhost", this.port);
 	}
-
+	
 	public void waitInit() throws IOException, ClassNotFoundException{
 		System.out.println("esperando");
 
@@ -94,95 +90,84 @@ public class ClienteFilosofo {
 				hashi1 = this.requestHashi("localhost");
 
 				if(hashi1 == false) {
-					System.out.println("\tpegou hashi 1");
-					takeHashi("localhost");
+					System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
 					hashi1 = true;
 
 					hashi2 = this.requestHashi(properties.get("serverNeigh"));
 
 					if(hashi2 == false) {
-						System.out.println("\tpegou hashi 2");
-						takeHashi(properties.get("serverNeigh"));
+						System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
 						hashi2 = true;
-						
 						trying = false;
-						System.out.println("comeu");
-						sleep1(100);
+						
+						//sleep1(2000);
+						try{
+							TimeUnit.SECONDS.sleep(2);
+						}catch(Exception e){
+							e.printStackTrace();
+						}
 						returnHashi(properties.get("serverNeigh"));
+						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 						returnHashi("localhost");
+						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
 					} else {
-						System.out.println("\tnao pegou hashi 2");
+						System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
 						returnHashi("localhost");
+						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 					}
-				}
+				} else System.out.println("\\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
 			} else {
 				hashi2 = this.requestHashi(properties.get("serverNeigh"));
 
 				if(hashi2 == false) {
-					System.out.println("\tpegou hashi 2");
-					takeHashi(properties.get("serverNeigh"));
+					System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
 					hashi2 = true;
 					
 					hashi1 = this.requestHashi("localhost");
 
 					if(hashi1 == false) {
-						System.out.println("\tpegou hashi 1");
-						takeHashi("localhost");
+						System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
 						hashi1 = true;
 						
 						trying = false;
-						System.out.println("comeu");
-						sleep1(100);
+						//sleep1(2000);
+						try{
+							TimeUnit.SECONDS.sleep(2);
+						}catch(Exception e){
+							e.printStackTrace();
+						}
 						returnHashi(properties.get("serverNeigh"));
-						returnHashi("localhost");						
+						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
+						returnHashi("localhost");
+						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
 					} else {
-						System.out.println("\tnao pegou hashi 1");
+						System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
 						returnHashi(properties.get("serverNeigh"));
+						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 					}
-				}
+				} else System.out.println("\\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
 			}
 			trying = rand.nextBoolean();
 		}
-
-		//		while(TRUE)
-		//	    {
-		//	         /* thinking section */
-		//	         trying = TRUE;
-		//	         while(trying)
-		//	         {
-		//	              choose side randomly and uniformly from {0,1};
-		//	              otherside = complement of side;
-		//	              wait until (forkkAvailable[i-side] is TRUE and change it to FALSE);
-		//	              if (forkAvailable[i-otherside] is TRUE and change it to FALSE)
-		//	                 then trying = FALSE;
-		//	                 else  forkAvailable[i-side] = TRUE;
-		//	         }
-		//	          /* eating section */
-		//	         forkAvailable[i-1] = forkAvailable[i] = TRUE;
-		//	     }
-
-	}
-
-	public void takeHashi(String ip) throws IOException {
-		ObjectOutputStream out;
-		
-		if(ip.equals("localhost"))
-			out = new ObjectOutputStream(new BufferedOutputStream(this.mySocket.getOutputStream()));
-		else
-			out = new ObjectOutputStream(new BufferedOutputStream(this.neighSocket.getOutputStream()));
-		Message msg = new Message("pegandoHashi");
-		out.writeObject(msg);
-		out.flush();
 	}
 
 	public boolean requestHashi(String ip) throws IOException {
+		Map<String, String> properties = new Properties("../config.properties").get();
 		ObjectOutputStream out;
 		ObjectInputStream in;
 		
-		if(ip.equals("localhost"))
+		if(ip.equals("localhost")) {
+			this.mySocket = new Socket("localhost", 
+					Integer.parseInt(properties.get("philoPort")));
 			out = new ObjectOutputStream(new BufferedOutputStream(this.mySocket.getOutputStream()));
-		else
+		}
+			
+		else {
+			this.neighSocket = new Socket(properties.get("serverNeigh"), 
+					Integer.parseInt(properties.get("philoPort")));
 			out = new ObjectOutputStream(new BufferedOutputStream(this.neighSocket.getOutputStream()));
+		}
+			
 		
 		Message msg = new Message("pedindoHashi");
 		out.writeObject(msg);
@@ -199,6 +184,9 @@ public class ClienteFilosofo {
 			e.printStackTrace();;
 		}
 
+		this.mySocket.close();
+		this.neighSocket.close();
+		
 		if(msg.getValue().equals("disponivel")) {
 			return false;
 		}
@@ -207,16 +195,27 @@ public class ClienteFilosofo {
 	}
 
 	public void returnHashi(String ip) throws IOException {
+		Map<String, String> properties = new Properties("../config.properties").get();
 		ObjectOutputStream out;
 		
-		if(ip.equals("localhost"))
+		if(ip.equals("localhost")) {
+			this.mySocket = new Socket("localhost", 
+					Integer.parseInt(properties.get("philoPort")));
 			out = new ObjectOutputStream(new BufferedOutputStream(this.mySocket.getOutputStream()));
-		else
+		}
+			
+		else {
+			this.neighSocket = new Socket(properties.get("serverNeigh"), 
+					Integer.parseInt(properties.get("philoPort")));
 			out = new ObjectOutputStream(new BufferedOutputStream(this.neighSocket.getOutputStream()));
+		}
 		
 		Message msg = new Message("devolvendoHashi");
 		out.writeObject(msg);
 		out.flush();
+		
+		this.mySocket.close();
+		this.neighSocket.close();
 	}
 
 	public void sleep1(int t) {
