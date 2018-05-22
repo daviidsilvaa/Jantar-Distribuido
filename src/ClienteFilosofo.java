@@ -14,16 +14,16 @@ public class ClienteFilosofo {
 
 	public static void main(String[] args) throws IOException, NumberFormatException, ClassNotFoundException {
 		Map<String, String> properties = new Properties("../config.properties").get();
-		
-		new ClienteFilosofo(" ", properties.get("serverInit"), 
-				Integer.parseInt(properties.get("serverPort")) 
+
+		new ClienteFilosofo(" ", properties.get("serverInit"),
+				Integer.parseInt(properties.get("serverPort"))
 				).waitInit();
-		
-//		new ClienteFilosofo(" ", properties.get("serverNeigh"), 
-//				Integer.parseInt(properties.get("serverPort")) 
+
+//		new ClienteFilosofo(" ", properties.get("serverNeigh"),
+//				Integer.parseInt(properties.get("serverPort"))
 //				).execute();
 	}
-	
+
 	public ClienteFilosofo(String client, String server, int port) throws UnknownHostException, IOException {
 		this.port = port;
 		this.server = server;
@@ -32,25 +32,31 @@ public class ClienteFilosofo {
 
 	public void waitInit() throws IOException, ClassNotFoundException{
 		System.out.println("esperando");
-		
+
 		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-		Message msg = (Message) in.readObject();
-		System.out.println("recebido" + msg.getValue());
-		
+		Message msg = new Message();
+		try{
+			msg = (Message) in.readObject();
+		}catch(Exception e){
+			System.out.println("Erro");
+		}
+		System.out.println("recebido: " + msg.getValue());
+
+		in.close();
 		this.socket.close();
 	}
-	
+
 	public void execute() throws IOException, ClassNotFoundException{
 		Map<String, String> properties = new Properties("../config.properties").get();
-		
+
 		System.out.println("Conectando ao filosofo " + properties.get("serverNeigh"));
-		
+
 //		while(!true);
-		
+
 //		new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-		
+
 //		System.out.println("recebido");
-		
+
 		this.socket.close();
 	}
 }
