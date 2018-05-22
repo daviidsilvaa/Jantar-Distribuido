@@ -60,12 +60,11 @@ public class ClienteFilosofo {
 	public void execute() throws IOException, ClassNotFoundException{
 		System.out.println("Conectado ao filosofo " + this.server);
 
-		//while(true) {
-		sleep();
-		think();
-		eat();
-		//			System.out.println("recebido");
-		//}
+		while(true) {
+			sleep();
+			think();
+			eat();
+		}
 	}
 
 	public void sleep() {
@@ -81,18 +80,83 @@ public class ClienteFilosofo {
 	public void eat() throws IOException {
 		Map<String, String> properties = new Properties("../config.properties").get();
 
-		boolean hashi1 = this.requestHashi("localhost");
-		boolean hashi2 = this.requestHashi(properties.get("serverNeigh"));
+		boolean trying = true;
+		boolean hashi1 = false;
+		boolean hashi2 = false;
 
-		if(!hashi1 && !hashi2) {
-			System.out.println("comeu");
-			sleep1(100);
-			returnHashi("localhost");
-			returnHashi(properties.get("serverNeigh"));
-		} else {
-			System.out.println("nao comeu");
+		while(trying) {
+			Random rand = new Random();
+			if(rand.nextBoolean() == true) {
+				hashi1 = this.requestHashi("localhost");
+
+				if(hashi1 == false) {
+					takeHashi("localhost");
+					hashi1 = true;
+
+					hashi2 = this.requestHashi(properties.get("serverNeigh"));
+
+					if(hashi2 == false) {
+						takeHashi(properties.get("serverNeigh"));
+						hashi2 = true;
+					} else {
+						returnHashi("localhost");
+					}
+
+					trying = false;
+					// come
+					sleep1(100);
+					returnHashi(properties.get("serverNeigh"));
+					returnHashi("localhost");
+				}
+			} else {
+				hashi2 = this.requestHashi(properties.get("serverNeigh"));
+
+				if(hashi2 == false) {
+					takeHashi(properties.get("serverNeigh"));
+					hashi2 = true;
+					
+					hashi1 = this.requestHashi(properties.get("serverNeigh"));
+
+					if(hashi1 == false) {
+						takeHashi("localhost");
+						hashi1 = true;
+					} else {
+						returnHashi(properties.get("serverNeigh"));
+					}
+
+					trying = false;
+					// come
+					sleep1(100);
+					returnHashi(properties.get("serverNeigh"));
+					returnHashi("localhost");
+				}
+			}
 		}
 
+		//		while(TRUE)
+		//	    {
+		//	         /* thinking section */
+		//	         trying = TRUE;
+		//	         while(trying)
+		//	         {
+		//	              choose side randomly and uniformly from {0,1};
+		//	              otherside = complement of side;
+		//	              wait until (forkkAvailable[i-side] is TRUE and change it to FALSE);
+		//	              if (forkAvailable[i-otherside] is TRUE and change it to FALSE)
+		//	                 then trying = FALSE;
+		//	                 else  forkAvailable[i-side] = TRUE;
+		//	         }
+		//	          /* eating section */
+		//	         forkAvailable[i-1] = forkAvailable[i] = TRUE;
+		//	     }
+
+	}
+
+	public void takeHashi(String ip) throws IOException {
+		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+		Message msg = new Message("pegandoHashi");
+		out.writeObject(msg);
+		out.flush();
 	}
 
 	public boolean requestHashi(String ip) throws IOException {
@@ -114,7 +178,7 @@ public class ClienteFilosofo {
 
 		return false;
 	}
-	
+
 	public void returnHashi(String ip) throws IOException {
 		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
 		Message msg = new Message("devolvendoHashi");
