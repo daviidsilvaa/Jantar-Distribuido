@@ -20,8 +20,7 @@ public class ClienteFilosofo {
 		Map<String, String> properties = new Properties("../config.properties").get();
 
 		ClienteFilosofo c1 = new ClienteFilosofo(properties.get("serverInit"),
-				Integer.parseInt(properties.get("serverPort"))
-				);
+				Integer.parseInt(properties.get("serverPort")));
 		c1.waitInit();
 
 		new Thread(new ServerFilosofo(Integer.parseInt(properties.get("philoPort")))).start();
@@ -40,7 +39,10 @@ public class ClienteFilosofo {
 	}
 	
 	public void waitInit() throws IOException, ClassNotFoundException{
+		Map<String, String> properties = new Properties("../config.properties").get();
 		System.out.println("esperando");
+		
+		this.neighSocket = new Socket(properties.get("serverInit"), Integer.parseInt(properties.get("serverPort")));
 
 		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(neighSocket.getInputStream()));
 		Message msg = new Message();
@@ -67,12 +69,12 @@ public class ClienteFilosofo {
 
 	public void sleep() {
 		System.out.println("dormindo");
-		sleep1(50);
+		sleep1(100);
 	}
 
 	public void think() {
 		System.out.println("pensando");
-		sleep1(50);
+		sleep1(100);
 	}
 
 	public void eat() throws IOException {
@@ -100,12 +102,8 @@ public class ClienteFilosofo {
 						hashi2 = true;
 						trying = false;
 						
-						//sleep1(2000);
-						try{
-							TimeUnit.SECONDS.sleep(2);
-						}catch(Exception e){
-							e.printStackTrace();
-						}
+						sleep1(1200);
+						
 						returnHashi(properties.get("serverNeigh"));
 						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 						returnHashi("localhost");
@@ -115,7 +113,7 @@ public class ClienteFilosofo {
 						returnHashi("localhost");
 						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 					}
-				} else System.out.println("\\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
+				} else System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
 			} else {
 				hashi2 = this.requestHashi(properties.get("serverNeigh"));
 
@@ -130,12 +128,8 @@ public class ClienteFilosofo {
 						hashi1 = true;
 						
 						trying = false;
-						//sleep1(2000);
-						try{
-							TimeUnit.SECONDS.sleep(2);
-						}catch(Exception e){
-							e.printStackTrace();
-						}
+						sleep1(1200);
+						
 						returnHashi(properties.get("serverNeigh"));
 						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 						returnHashi("localhost");
@@ -145,7 +139,7 @@ public class ClienteFilosofo {
 						returnHashi(properties.get("serverNeigh"));
 						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 					}
-				} else System.out.println("\\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
+				} else System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
 			}
 			trying = rand.nextBoolean();
 		}
@@ -184,9 +178,6 @@ public class ClienteFilosofo {
 			e.printStackTrace();;
 		}
 
-		this.mySocket.close();
-		this.neighSocket.close();
-		
 		if(msg.getValue().equals("disponivel")) {
 			return false;
 		}
@@ -213,9 +204,6 @@ public class ClienteFilosofo {
 		Message msg = new Message("devolvendoHashi");
 		out.writeObject(msg);
 		out.flush();
-		
-		this.mySocket.close();
-		this.neighSocket.close();
 	}
 
 	public void sleep1(int t) {

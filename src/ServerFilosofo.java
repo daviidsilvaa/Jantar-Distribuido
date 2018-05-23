@@ -47,7 +47,6 @@ public class ServerFilosofo implements Runnable{
 				this.isHashiInUse = true;
 			} else {
 				msg.setValue("indisponivel");
-				System.out.println("indisponivel");
 			}
 
 			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
