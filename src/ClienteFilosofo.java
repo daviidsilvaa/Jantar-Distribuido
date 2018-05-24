@@ -5,7 +5,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +14,7 @@ public class ClienteFilosofo {
 	private Socket mySocket;
 	private Socket neighSocket;
 	private String server;
+	private Integer eat_t;
 
 	public static void main(String[] args) throws IOException, NumberFormatException, ClassNotFoundException {
 		Map<String, String> properties = new Properties("../config.properties").get();
@@ -35,6 +35,7 @@ public class ClienteFilosofo {
 	}
 
 	public ClienteFilosofo(String server, int port) throws UnknownHostException, IOException {
+		this.eat_t = 0;
 		this.server = server;
 	}
 	
@@ -59,21 +60,31 @@ public class ClienteFilosofo {
 
 	public void execute() throws IOException, ClassNotFoundException{
 		System.out.println("Conectado ao filosofo " + this.server);
-
-		while(true) {
-			sleep();
-			think();
-			eat();
+		long start = System.nanoTime();
+		long now = 0;
+		
+		while((now - start)/1000000000 < 30) {
+			Random rand = new Random();
+			switch(rand.nextInt(3)) {
+				case 0: sleep();
+					break;
+				case 1: think();
+					break;
+				case 2:	eat();
+					break;
+			}
+			now = System.nanoTime();
 		}
+		System.out.println("david comeu " + this.eat_t + " vezes");
 	}
 
 	public void sleep() {
-		System.out.println("dormindo");
+//		System.out.println("dormindo");
 		sleep1(100);
 	}
 
 	public void think() {
-		System.out.println("pensando");
+//		System.out.println("pensando");
 		sleep1(100);
 	}
 
@@ -85,61 +96,67 @@ public class ClienteFilosofo {
 		boolean hashi2 = false;
 
 		while(trying) {
-			System.out.println("tentando comer");
+//			System.out.println("tentando comer");
 			Random rand = new Random();
 			if(rand.nextBoolean() == true) {
 				
 				hashi1 = this.requestHashi("localhost");
 
 				if(hashi1 == false) {
-					System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
+//					System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
 					hashi1 = true;
 
 					hashi2 = this.requestHashi(properties.get("serverNeigh"));
 
 					if(hashi2 == false) {
-						System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
 						hashi2 = true;
 						trying = false;
 						
 						sleep1(1200);
 						
 						returnHashi(properties.get("serverNeigh"));
-						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 						returnHashi("localhost");
-						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
+						this.eat_t++;
+						break;
 					} else {
-						System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
 						returnHashi("localhost");
-						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 					}
-				} else System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
+				} 
+//				else System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
 			} else {
 				hashi2 = this.requestHashi(properties.get("serverNeigh"));
 
 				if(hashi2 == false) {
-					System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
+//					System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
 					hashi2 = true;
 					
 					hashi1 = this.requestHashi("localhost");
 
 					if(hashi1 == false) {
-						System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
 						hashi1 = true;
 						
 						trying = false;
 						sleep1(1200);
 						
 						returnHashi(properties.get("serverNeigh"));
-						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 						returnHashi("localhost");
-						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
+						this.eat_t++;
+						break;
 					} else {
-						System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
 						returnHashi(properties.get("serverNeigh"));
-						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
+//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
 					}
-				} else System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
+				} 
+//				else System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
 			}
 			trying = rand.nextBoolean();
 		}
