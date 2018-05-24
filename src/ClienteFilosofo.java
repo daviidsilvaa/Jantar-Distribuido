@@ -71,7 +71,7 @@ public class ClienteFilosofo {
 					break;
 				case 1: think();
 					break;
-				case 2: if (this.tryEat) eat();
+				case 2: eat();
 					break;
 			}
 			now = System.nanoTime();

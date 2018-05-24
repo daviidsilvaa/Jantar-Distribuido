@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class ServerFilosofo implements Runnable{
 	private int port;
@@ -69,6 +70,9 @@ public class ServerFilosofo implements Runnable{
 		}
 		
 		if (msg.getValue().equals("fecharServer")) {
+			try{
+				TimeUnit.SECONDS.sleep(3);
+			}catch(Exception e){}
 			this.isStopped = true;
 		}
 	}
