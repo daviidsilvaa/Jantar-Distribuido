@@ -15,10 +15,11 @@ public class ClienteFilosofo {
 	private Socket neighSocket;
 	private String server;
 	private Integer eat_t;
+	private boolean tryEat;
 
 	public static void main(String[] args) throws IOException, NumberFormatException, ClassNotFoundException {
 		Map<String, String> properties = new Properties("../config.properties").get();
-
+		
 		ClienteFilosofo c1 = new ClienteFilosofo(properties.get("serverInit"),
 				Integer.parseInt(properties.get("serverPort")));
 		c1.waitInit();
@@ -70,12 +71,24 @@ public class ClienteFilosofo {
 					break;
 				case 1: think();
 					break;
-				case 2:	eat();
+				case 2: if (this.tryEat) eat();
 					break;
 			}
 			now = System.nanoTime();
 		}
-		System.out.println("david comeu " + this.eat_t + " vezes");
+		System.out.println("filosofo comeu " + this.eat_t + " vezes");
+		closeServer();
+	}
+
+	private void closeServer() throws IOException {
+		Map<String, String> properties = new Properties("../config.properties").get();
+		ObjectOutputStream out;
+		this.mySocket = new Socket("localhost", 
+				Integer.parseInt(properties.get("philoPort")));
+		out = new ObjectOutputStream(new BufferedOutputStream(this.mySocket.getOutputStream()));
+		Message msg = new Message("fecharServer", new LocalIP().get());
+		out.writeObject(msg);
+		out.flush();		
 	}
 
 	public void sleep() {
@@ -90,75 +103,77 @@ public class ClienteFilosofo {
 
 	public void eat() throws IOException {
 		Map<String, String> properties = new Properties("../config.properties").get();
-
-		boolean trying = true;
+		String who;
 		boolean hashi1 = false;
 		boolean hashi2 = false;
 
-		while(trying) {
-//			System.out.println("tentando comer");
-			Random rand = new Random();
-			if(rand.nextBoolean() == true) {
-				
-				hashi1 = this.requestHashi("localhost");
+		//			System.out.println("tentando comer");
+		Random rand = new Random();
+		if(rand.nextBoolean() == true) {
 
-				if(hashi1 == false) {
-//					System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
-					hashi1 = true;
+			hashi1 = this.requestHashi("localhost");
 
-					hashi2 = this.requestHashi(properties.get("serverNeigh"));
+			if(hashi1 == false) {
+				//					System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
+				hashi1 = true;
 
-					if(hashi2 == false) {
-//						System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
-						hashi2 = true;
-						trying = false;
-						
-						sleep1(1200);
-						
-						returnHashi(properties.get("serverNeigh"));
-//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
-						returnHashi("localhost");
-//						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
-						this.eat_t++;
-						break;
-					} else {
-//						System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
-						returnHashi("localhost");
-//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
-					}
-				} 
-//				else System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
-			} else {
 				hashi2 = this.requestHashi(properties.get("serverNeigh"));
 
 				if(hashi2 == false) {
-//					System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
+					//						System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
 					hashi2 = true;
-					
-					hashi1 = this.requestHashi("localhost");
 
-					if(hashi1 == false) {
-//						System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
-						hashi1 = true;
-						
-						trying = false;
-						sleep1(1200);
-						
-						returnHashi(properties.get("serverNeigh"));
-//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
-						returnHashi("localhost");
-//						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
-						this.eat_t++;
-						break;
-					} else {
-//						System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
-						returnHashi(properties.get("serverNeigh"));
-//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
-					}
-				} 
-//				else System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
+					sleep1(1200);
+
+					returnHashi(properties.get("serverNeigh"));
+					//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
+					returnHashi("localhost");
+					//						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
+					this.eat_t++;
+				} else {
+					//						System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
+					returnHashi("localhost");
+					this.tryEat = false;
+					who = "serverNeigh";
+					//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
+				}
+			} else {
+				this.tryEat = false;  
+				who = "localhost";
 			}
-			trying = rand.nextBoolean();
+			//				else System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
+		} else {
+			hashi2 = this.requestHashi(properties.get("serverNeigh"));
+
+			if(hashi2 == false) {
+				//					System.out.println("\tpegou hashi 2 " + LocalDateTime.now().toLocalTime());
+				hashi2 = true;
+
+				hashi1 = this.requestHashi("localhost");
+
+				if(hashi1 == false) {
+					//						System.out.println("\tpegou hashi 1 " + LocalDateTime.now().toLocalTime());
+					hashi1 = true;
+
+					sleep1(1200);
+
+					returnHashi(properties.get("serverNeigh"));
+					//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
+					returnHashi("localhost");
+					//						System.out.println("\tentregou hashi 1 " + LocalDateTime.now().toLocalTime());
+					this.eat_t++;
+				} else {
+					//						System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
+					returnHashi(properties.get("serverNeigh"));
+					this.tryEat = false;
+					who = "localhost";
+					//						System.out.println("\tentregou hashi 2 " + LocalDateTime.now().toLocalTime());
+				}
+			} else{
+				this.tryEat = false;
+				who = "serverNeigh";
+			}
+			//				else System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
 		}
 	}
 
@@ -180,7 +195,7 @@ public class ClienteFilosofo {
 		}
 			
 		
-		Message msg = new Message("pedindoHashi");
+		Message msg = new Message("pedindoHashi", new LocalIP().get());
 		out.writeObject(msg);
 		out.flush();
 
@@ -218,7 +233,7 @@ public class ClienteFilosofo {
 			out = new ObjectOutputStream(new BufferedOutputStream(this.neighSocket.getOutputStream()));
 		}
 		
-		Message msg = new Message("devolvendoHashi");
+		Message msg = new Message("devolvendoHashi", new LocalIP().get());
 		out.writeObject(msg);
 		out.flush();
 	}

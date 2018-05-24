@@ -5,13 +5,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerFilosofo implements Runnable{
 	private int port;
 	private ServerSocket server;
 	private Socket socket;
 	private boolean isStopped;
-
+	private List<String> list;
 	private boolean isHashiInUse;
 
 	public void run(){
@@ -29,6 +31,7 @@ public class ServerFilosofo implements Runnable{
 		this.server = new ServerSocket(this.port);
 		this.isHashiInUse = false;
 		this.isStopped = false;
+		this.list = new ArrayList<String>();
 	}
 
 	public void execute() throws IOException {
@@ -47,6 +50,7 @@ public class ServerFilosofo implements Runnable{
 				this.isHashiInUse = true;
 			} else {
 				msg.setValue("indisponivel");
+				list.add(msg.getIp());
 			}
 
 			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
@@ -57,10 +61,15 @@ public class ServerFilosofo implements Runnable{
 
 		if(msg.getValue().equals("devolvendoHashi")) {
 			this.isHashiInUse = false;
+			
 		}
 
 		if(msg.getValue().equals("pegandoHashi")) {
 			this.isHashiInUse = true;
+		}
+		
+		if (msg.getValue().equals("fecharServer")) {
+			this.isStopped = true;
 		}
 	}
 }
