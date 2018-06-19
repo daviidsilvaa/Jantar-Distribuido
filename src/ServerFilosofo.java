@@ -66,25 +66,45 @@ public class ServerFilosofo implements Runnable{
 
 		if(msg.getValue().equals("devolvendoHashi")) {
 			this.isHashiInUse = false;
-			
-			@SuppressWarnings("resource")
-			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(
-					new Socket(this.list.poll(), Integer.parseInt(properties.get("philoPort"))).getOutputStream()));
-			
-			msg.setValue("enfim disponivel");
-			out.writeObject(msg);
-			out.flush();
+		}
+		
+		if(msg.getValue().equals("esperandoHashi")){
+			new Thread(this.foo()).start();
 		}
 
 		if(msg.getValue().equals("pegandoHashi")) {
 			this.isHashiInUse = true;
 		}
-		
+
 		if (msg.getValue().equals("fecharServer")) {
 			try{
 				TimeUnit.SECONDS.sleep(3);
 			}catch(Exception e){}
 			this.isStopped = true;
+
+			@SuppressWarnings("resource")
+			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(
+					new Socket(this.list.poll(), Integer.parseInt(properties.get("philoPort"))).getOutputStream()));
+
+			msg.setValue("terminei");
+			out.writeObject(msg);
+			out.flush();
 		}
+	}
+	
+	public Runnable foo() throws IOException {
+		Map<String, String> properties = new Properties("../config.properties").get();
+		while(this.isHashiInUse);
+		
+		@SuppressWarnings("resource")
+		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(
+				new Socket(this.list.poll(), Integer.parseInt(properties.get("philoPort"))).getOutputStream()));
+
+		Message msg = null;
+		msg.setValue("enfim disponivel");
+		out.writeObject(msg);
+		out.flush();
+		
+		return null;
 	}
 }

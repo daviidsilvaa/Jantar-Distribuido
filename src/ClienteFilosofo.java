@@ -15,7 +15,7 @@ public class ClienteFilosofo {
 	private Socket neighSocket;
 	private String server;
 	private Integer eat_t;
-	private boolean tryEat;
+	private boolean tryEat = true;
 	private Map<String, String> prop;
 
 	public static void main(String[] args) throws IOException, NumberFormatException, ClassNotFoundException {
@@ -70,15 +70,16 @@ public class ClienteFilosofo {
 		long start = System.nanoTime();
 		long now = 0;
 
-		while((now - start)/1000000000 < 30) {
+		while((now - start)/1000000000 < 10) {
 			Random rand = new Random();
 			switch(rand.nextInt(3)) {
 			case 0: sleep();
 			break;
 			case 1: think();
 			break;
-			case 2: //if (this.tryEat)
-				eat();
+			case 2:
+				if (this.tryEat)
+					eat();
 				break;
 			}
 			now = System.nanoTime();
@@ -183,13 +184,31 @@ public class ClienteFilosofo {
 //				else System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
 		}
 		
-		this.foo(who);
+		if(this.tryEat == false)
+//			new Thread(this.foo(who)).start();;
+			waitingHashi(who);
 	}
 
-	public void foo(String ip) throws IOException {
-		Message msg = null;
+	public void waitingHashi(String ip) throws IOException {
+		ObjectOutputStream out;
 		ObjectInputStream in;
-		
+
+		if(ip.equals("localhost")) {
+			this.mySocket = new Socket("localhost",
+					Integer.parseInt(this.prop.get("philoPort")));
+			out = new ObjectOutputStream(new BufferedOutputStream(this.mySocket.getOutputStream()));
+		}
+		else {
+			this.neighSocket = new Socket(this.prop.get("serverNeigh"),
+					Integer.parseInt(this.prop.get("philoPort")));
+			out = new ObjectOutputStream(new BufferedOutputStream(this.neighSocket.getOutputStream()));
+		}
+
+
+		Message msg = new Message("esperandoHashi", new LocalIP().get());
+		out.writeObject(msg);
+		out.flush();
+
 		if(ip.equals("localhost"))
 			in = new ObjectInputStream(new BufferedInputStream(this.mySocket.getInputStream()));
 		else
@@ -200,10 +219,10 @@ public class ClienteFilosofo {
 		}catch(Exception e){
 			e.printStackTrace();;
 		}
-		if (msg.getValue().equals("enfim disponivel")) {
+
+		if(msg.getValue().equals("enfim disponivel")) {
 			this.tryEat = true;
 		}
-		
 	}
 	
 	public boolean requestHashi(String ip) throws IOException {
