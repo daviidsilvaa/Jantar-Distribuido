@@ -5,16 +5,19 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
+
+import properties.Properties;
 
 public class ServerFilosofo implements Runnable{
 	private int port;
 	private ServerSocket server;
 	private Socket socket;
 	private boolean isStopped;
-	private List<String> list;
+	private Queue<String> list;
 	private boolean isHashiInUse;
 
 	public void run(){
@@ -32,10 +35,11 @@ public class ServerFilosofo implements Runnable{
 		this.server = new ServerSocket(this.port);
 		this.isHashiInUse = false;
 		this.isStopped = false;
-		this.list = new ArrayList<String>();
+		this.list = new LinkedList<String>();
 	}
 
 	public void execute() throws IOException {
+		Map<String, String> properties = new Properties("../config.properties").get();
 		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		Message msg = new Message();
 
@@ -63,6 +67,13 @@ public class ServerFilosofo implements Runnable{
 		if(msg.getValue().equals("devolvendoHashi")) {
 			this.isHashiInUse = false;
 			
+			@SuppressWarnings("resource")
+			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(
+					new Socket(this.list.poll(), Integer.parseInt(properties.get("philoPort"))).getOutputStream()));
+			
+			msg.setValue("enfim disponivel");
+			out.writeObject(msg);
+			out.flush();
 		}
 
 		if(msg.getValue().equals("pegandoHashi")) {

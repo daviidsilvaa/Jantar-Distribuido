@@ -109,7 +109,7 @@ public class ClienteFilosofo {
 	}
 
 	public void eat() throws IOException {
-		String who;
+		String who = null;
 		boolean hashi1 = false;
 		boolean hashi2 = false;
 
@@ -147,22 +147,6 @@ public class ClienteFilosofo {
 //				se o hashi nao estiver disponivel
 				this.tryEat = false;
 				who = "localhost";
-				
-//				ObjectInputStream in;
-//				Message msg = null;
-//
-//				in = new ObjectInputStream(new BufferedInputStream(this.mySocket.getInputStream()));
-//
-//				try{
-//					msg = (Message) in.readObject();
-//				}catch(Exception e){
-//					e.printStackTrace();;
-//				}
-//
-//				if(msg.getValue().equals("disponivel")) {
-//					
-//				}
-				
 			}
 //				else System.out.println("\tnao pegou hashi 1 " + LocalDateTime.now().toLocalTime());
 		} else {
@@ -198,8 +182,30 @@ public class ClienteFilosofo {
 			}
 //				else System.out.println("\tnao pegou hashi 2 " + LocalDateTime.now().toLocalTime());
 		}
+		
+		this.foo(who);
 	}
 
+	public void foo(String ip) throws IOException {
+		Message msg = null;
+		ObjectInputStream in;
+		
+		if(ip.equals("localhost"))
+			in = new ObjectInputStream(new BufferedInputStream(this.mySocket.getInputStream()));
+		else
+			in = new ObjectInputStream(new BufferedInputStream(this.neighSocket.getInputStream()));
+
+		try{
+			msg = (Message) in.readObject();
+		}catch(Exception e){
+			e.printStackTrace();;
+		}
+		if (msg.getValue().equals("enfim disponivel")) {
+			this.tryEat = true;
+		}
+		
+	}
+	
 	public boolean requestHashi(String ip) throws IOException {
 		ObjectOutputStream out;
 		ObjectInputStream in;
@@ -209,7 +215,6 @@ public class ClienteFilosofo {
 					Integer.parseInt(this.prop.get("philoPort")));
 			out = new ObjectOutputStream(new BufferedOutputStream(this.mySocket.getOutputStream()));
 		}
-
 		else {
 			this.neighSocket = new Socket(this.prop.get("serverNeigh"),
 					Integer.parseInt(this.prop.get("philoPort")));
